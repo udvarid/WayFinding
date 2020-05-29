@@ -4,11 +4,13 @@ import com.donat.cell.{Cell, Room}
 
 import scala.util.Random
 
-class Manager {
+class Manager(row: Int, column: Int) {
 
   var myRoom: Room = _
 
-  def createRoom(row: Int, column: Int): Unit = {
+  var results: Map[Int, Int] = Map()
+
+  private def createRoom(row: Int, column: Int): Unit = {
     myRoom = Room(row, column)
   }
 
@@ -27,29 +29,37 @@ class Manager {
   }
 
   def process(): Unit = {
-    if (myRoom != null) {
+    createRoom(row, column)
 
-      var i = 0
-      var stayInLoop: Boolean = true
-      while (stayInLoop) {
-        val openedCell = openAWall()
-        val neighbours: List[Cell] = findNeighbours(openedCell)
-        neighbours.foreach(c => myRoom.connect(openedCell, c))
-        for {
-          s <- myRoom.openStart
-          e <- myRoom.openEnd
-        } {
-          if (s onSameTree e) {
-            if (stayInLoop) {
-              stayInLoop = false
-              myRoom.signTheWinnerCells(s.rootOfMyTree)
-            }
+    var i = 0
+    var stayInLoop: Boolean = true
+    while (stayInLoop) {
+      val openedCell = openAWall()
+      val neighbours: List[Cell] = findNeighbours(openedCell)
+      neighbours.foreach(c => myRoom.connect(openedCell, c))
+      for {
+        s <- myRoom.openStart
+        e <- myRoom.openEnd
+      } {
+        if (s onSameTree e) {
+          if (stayInLoop) {
+            stayInLoop = false
+            myRoom.signTheWinnerCells(s.rootOfMyTree)
           }
         }
-        i += 1
       }
-      println(s"The room is free to access on ${i - 1}th step.")
+      i += 1
     }
+
+    results += (results.size + 1 -> (i - 1))
+
+  }
+
+  def multiProcess(number: Int): Unit = {
+    for (i <- 1 to number) process()
+    val sumOfReusult = results.foldLeft(0)(_ + _._2)
+    val result: Double = sumOfReusult.doubleValue() / (row.doubleValue() * column.doubleValue() * number.doubleValue())
+    println(f"From $number tries in a ($row * $column) size room the necessary average open size of the room is ${result * 100}%.2f%%")
   }
 
   private def openAWall(): Cell = {

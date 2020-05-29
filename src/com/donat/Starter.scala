@@ -2,12 +2,10 @@ package com.donat
 
 object Starter extends App {
 
-  val myManager: Manager = new Manager
+  val myManager: Manager = new Manager(40, 40)
 
-  myManager.createRoom(40, 40)
+  myManager.multiProcess(50)
 
-  myManager.process()
-
-  myManager.drawRoom()
+  //myManager.drawRoom()
 
 }
